@@ -19,9 +19,18 @@ JNIEXPORT void JNICALL Java_Try_hello(JNIEnv *env, jobject this)
 JNIEXPORT jobjectArray JNICALL Java_Try_arr(JNIEnv *env, jobject this)
 {
 	jint sz = 3;
-	jobject init = NULL;
+
 	jclass class = (*env)->FindClass(env, "Ljava/lang/String;");
-	jobjectArray oa = (*env)->NewObjectArray(env, sz, class, init);
+	if (!class) {
+		fprintf(stderr, "Could not find class.\n");
+		exit(EXIT_FAILURE);
+	}
+
+	jobjectArray oa = (*env)->NewObjectArray(env, sz, class, NULL);
+	if (!oa) {
+		fprintf(stderr, "Could not create array.\n");
+		exit(EXIT_FAILURE);
+	}
 
 	char *hello[] = {"Oh", "mya", "god"};
 
@@ -40,7 +49,7 @@ JNIEXPORT jobjectArray JNICALL Java_Try_arr(JNIEnv *env, jobject this)
 JNIEXPORT jobjectArray JNICALL Java_Try_cpairFromArray(JNIEnv *env, jobject this, jarray jarr) {
 	size_t len = (*env)->GetArrayLength(env, jarr);
 
-	jclass class =(*env)->FindClass(env, "aadesaed/try/CPair");
+	jclass class =(*env)->FindClass(env, "CPair");
 	if (!class) {
 		fprintf(stderr, "Could not find class\n");
 		exit(EXIT_FAILURE);
@@ -65,17 +74,18 @@ JNIEXPORT jobjectArray JNICALL Java_Try_cpairFromArray(JNIEnv *env, jobject this
 			fprintf(stderr, "Could not get string lenght.\n");
 			exit(EXIT_FAILURE);
 		};
-		jmethodID m_ID = (*env)->GetMethodID(env, class, "<init>", "()V");
+
+		jmethodID m_ID = (*env)->GetMethodID(env, class, "<init>", "(Ljava/lang/String;I)V");
 		if (!m_ID) {
 			fprintf(stderr, "Could not get method ID.\n");
 			exit(EXIT_FAILURE);
 		}
 
-		jvalue *values[2];
-		values[0]->l = jstr;
-		values[1]->i = str_len;
+		jvalue values[2];
+		values[0].l = jstr;
+		values[1].i = str_len;
 		
-		jobject cpair = (*env)->NewObject(env, class, m_ID, values);
+		jobject cpair = (*env)->NewObjectA(env, class, m_ID, values);
 		if (!cpair) {
 			fprintf(stderr, "Could not create pair.\n");
 			exit(EXIT_FAILURE);
